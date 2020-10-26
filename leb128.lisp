@@ -7,7 +7,13 @@
 (defmethod encode-signed (i)
   "Encode an integer of arbitrary length into a leb128 unsigned-8 buffer"
   (let ((more t) (curr) (in 0) (ret (make-array
-                                     (ceiling  (/ (log (abs (+ i 1)) 2) 7))
+                                     (if (>= i 0)
+                                         (if (= (logand #x40 (mod i 128)) 64)
+                                             (+ 1 (ceiling (/ (log (+ 2 (abs i)) 2) 7)))
+                                             (ceiling (/ (log (+ (abs i) 2) 2) 7)))                                        
+                                         (if (= (logand #x40 (mod i 128)) 64) 
+                                             (ceiling (/ (log (+ 2 (abs i))) 7))
+                                             (+ 1 (ceiling (/ (log (+ 2 (abs i))) 7)))))
                                      :element-type '(unsigned-byte 8)))) ;(neg (< i 0))
     (loop while more do
          (setf curr (logand i #x7f))
@@ -55,7 +61,7 @@ num-bytes-consumed)"
   "Encode an arbitrarily large unsigned integer in leb128"
   (declare (type unsigned-byte i))
   (let ((more t) (curr) (in 0) (ret (make-array
-                                     (ceiling  (/ (log i 2) 7))
+                                     (ceiling  (/ (log (+ i 1) 2) 7))
                                      :element-type '(unsigned-byte 8)))) ;(neg (< i 0))
     (loop while more do
          (setf curr (logand i #x7f))

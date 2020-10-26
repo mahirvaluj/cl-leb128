@@ -1,0 +1,30 @@
+* cl-leb128
+  This small library encodes and decodes signed and unsigned leb128
+  numbers in Common Lisp.
+  
+  It should be pretty fast, as ~simple-array~ are used for the storage
+  of the numbers, and it is iterative, with binary arithmetic used
+  where possible.
+  
+* API
+** ~(encode-signed i)~
+   Returns a ~(simple-array (unsigned-byte 8))~ with the leb128
+   encoding of ~i~.
+
+** ~(decode-signed in &key (start 0))~
+   Returns an integer decoded from ~in~. ~in~ can either be a ~(array
+   (unsigned-byte 8))~, or a stream of values ~(unsigned-byte 8)~.
+   
+   If ~start~ is supplied and a stream passed in, ~start~ number of
+   bytes will be discarded from the input stream.
+   
+   Returns two values, the decoded integer, as well as the number of
+   bytes consumed.
+   
+** ~(encode-unsigned i)~
+   Works nearly identically to previously, but only accepts
+   ~unsigned-byte~ numbers.
+   
+** ~(decode-unsigned in &key (start 0))~
+   Works nearly identically to ~decode-signed~, returns two values as
+   well, and takes the same inputs.

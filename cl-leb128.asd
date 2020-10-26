@@ -1,2 +1,2 @@
-(defsystem "leb128"
+(defsystem "cl-leb128"
   :components ((:file "leb128")))

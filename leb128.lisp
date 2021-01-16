@@ -11,6 +11,8 @@
                                          (if (= (logand #x40 (ash i (* -7 (floor (log i 128))))) 64)
                                              (+ 1 (ceiling (log i 128)))
                                              (ceiling (log i 128)))
+                                         ;; there is almost certainly a bug right here
+                                         ;; and I will get to it when I can 
                                          (if (= (logand #x40 (mod i 128)) 64)
                                              (ceiling (/ (log (+ 2 (abs i))) 7))
                                              (+ 1 (ceiling (/ (log (+ 2 (abs i))) 7)))))

@@ -8,9 +8,9 @@
   "Encode an integer of arbitrary length into a leb128 unsigned-8 buffer"
   (let ((more t) (curr) (in 0) (ret (make-array
                                      (if (>= i 0)
-                                         (if (= (logand #x40 (mod i 128)) 64)
-                                             (+ 1 (ceiling (/ (log (+ 2 (abs i)) 2) 7)))
-                                             (ceiling (/ (log (+ (abs i) 2) 2) 7)))
+                                         (if (= (logand #x40 (ash i (* -7 (floor (log i 128))))) 64)
+                                             (+ 1 (ceiling (log i 128)))
+                                             (ceiling (log i 128)))
                                          (if (= (logand #x40 (mod i 128)) 64)
                                              (ceiling (/ (log (+ 2 (abs i))) 7))
                                              (+ 1 (ceiling (/ (log (+ 2 (abs i))) 7)))))

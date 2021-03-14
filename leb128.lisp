@@ -4,29 +4,27 @@
            :encode-unsigned :decode-unsigned))
 (in-package :leb128)
 
+;; This function has thus far been the bane of my existence so I have
+;; resorted to using an adjustable array. If this is too slow,
+;; reimplment it, it shouldn't be hard.
 (defmethod encode-signed (i)
   "Encode an integer of arbitrary length into a leb128 unsigned-8 buffer"
-  (let ((more t) (curr) (in 0) (ret (make-array
-                                     (if (>= i 0)
-                                         (if (= (logand #x40 (ash i (* -7 (floor (log i 128))))) 64)
-                                             (+ 1 (ceiling (log i 128)))
-                                             (ceiling (log i 128)))
-                                         ;; there is almost certainly a bug right here
-                                         ;; and I will get to it when I can 
-                                         (if (= (logand #x40 (mod i 128)) 64)
-                                             (ceiling (/ (log (+ 2 (abs i))) 7))
-                                             (+ 1 (ceiling (/ (log (+ 2 (abs i))) 7)))))
+  (let ((more t) (curr) (in 0) (int (make-array
+                                     4
+                                     :adjustable t
+                                     :fill-pointer 0
                                      :element-type '(unsigned-byte 8)))) ;(neg (< i 0))
     (loop while more do
-         (setf curr (logand i #x7f))
-         (setf i (ash i -7))
-         (if (or (and (= i 0)  (= (logand curr #x40) 0))
-                 (and (= i -1) (= (logand curr #x40) 64)))
-             (setf more nil)
-             (setf curr (logior curr #x80)))
-         (setf (aref ret in) curr)
-         (incf in))
-    ret))
+      (setf curr (logand i #x7f))
+      (setf i (ash i -7))
+      (if (or (and (= i 0)  (= (logand curr #x40) 0))
+              (and (= i -1) (= (logand curr #x40) 64)))
+          (setf more nil)
+          (setf curr (logior curr #x80)))
+      (vector-push-extend curr int)
+      (incf in))
+    (let ((ret (make-array (length int) :element-type '(unsigned-byte 8) :initial-contents int)))
+      ret)))
 
 (defmethod decode-signed ((s stream) &key (start 0))
   "decode signed integer from stream. Returns (values decoded-integer
@@ -63,7 +61,9 @@ num-bytes-consumed)"
   "Encode an arbitrarily large unsigned integer in leb128"
   (declare (type unsigned-byte i))
   (let ((more t) (curr) (in 0) (ret (make-array
-                                     (ceiling  (/ (log (+ i 1) 2) 7))
+                                     (if (= i 0)
+                                         1
+                                         (ceiling  (/ (log (+ i 1) 2) 7)))
                                      :element-type '(unsigned-byte 8)))) ;(neg (< i 0))
     (loop while more do
          (setf curr (logand i #x7f))

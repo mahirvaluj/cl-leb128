@@ -2,9 +2,11 @@
   This small library encodes and decodes signed and unsigned leb128
   numbers in Common Lisp.
   
-  It should be pretty fast, as ~simple-array~ are used for the storage
-  of the numbers, and it is iterative, with binary arithmetic used
-  where possible.
+  It should be fast, (with the exception of the ~encode-signed~
+  operation, which has to do a data copy, and use a non-simple array,
+  so lookup cost is incurred), as ~simple-array~ are used for the
+  storage of the numbers, and it is iterative, with binary arithmetic
+  used where possible.
   
 * API
 ** ~(encode-signed i)~
